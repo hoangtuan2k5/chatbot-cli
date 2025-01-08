@@ -99,6 +99,11 @@ python main.py "your question here"
 python main.py --file path/to/file.py "explain this code"
 ```
 
+### Inline Copy Mode
+```bash
+python main.py "your question here | cp c-1 c-2"
+```
+
 ## Commands
 - `exit` - Exit the application
 - `cp` - Copy full response

@@ -34,15 +34,25 @@ def main():
 
     # Inline mode (content specified)
     if content:
+        # Split content into message and copy commands
+        parts = content.strip().split(" | ")
+        message = parts[0]
+        copy_command = parts[1] if len(parts) > 1 else None
+
         system_role = select_role_inline(ROLES)
         chatbot = Chatbot(system_role)
 
         # Handle file mode
         if args.file:
-            content = chatbot.process_file_input(content, args.file)
+            message = chatbot.process_file_input(message, args.file)
 
-        response_text = chatbot.get_response(content)
+        response_text = chatbot.get_response(message)
         display_markdown(response_text)
+
+        # Process copy command if present
+        if copy_command:
+            result = copy_content(response_text, copy_command)
+            print(result)
         return
 
     # Interactive chat mode
