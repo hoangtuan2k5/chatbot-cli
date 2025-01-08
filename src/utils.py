@@ -8,11 +8,11 @@ def copy_content(text: str, command: str) -> str:
     copied_content = []
 
     for cmd in commands:
-        if cmd == "copy":
+        if cmd == "cp":
             copied_content.append(text)
             result.append("✓ Full response copied")
 
-        elif cmd.startswith("code-"):
+        elif cmd.startswith("c-"):
             try:
                 index = int(cmd.split("-")[1]) - 1
                 code_blocks = re.findall(r"```(?:\w+)?\n(.*?)```", text, re.DOTALL)
