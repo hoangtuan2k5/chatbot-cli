@@ -8,7 +8,7 @@ GROQ_API_KEY = os.getenv(
 )
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "llama-3.3-70b-versatile"
-TEMPERATURE = 0.30
+TEMPERATURE = 0.75
 MAX_TOKENS = 8192
 
 ROLES = {
