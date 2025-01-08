@@ -1,0 +1,5 @@
+requests>=2.31.0
+python-dotenv>=1.0.0
+rich>=13.7.0
+prompt-toolkit>=3.0.43
+pyperclip>=1.8.2
