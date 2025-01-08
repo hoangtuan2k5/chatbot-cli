@@ -39,7 +39,8 @@ def main():
         message = parts[0]
         copy_command = parts[1] if len(parts) > 1 else None
 
-        system_role = select_role_inline(ROLES)
+        # Use role 1 (Programming Expert) by default for inline mode
+        system_role = ROLES["1"]
         chatbot = Chatbot(system_role)
 
         # Handle file mode

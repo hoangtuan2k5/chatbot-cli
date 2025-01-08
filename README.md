@@ -29,7 +29,7 @@ Hoàng Chiều Nguyễn Tuấn
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/hoangtuan2k5/chatbot-cli.git
 cd chatbot-cli
 ```
 
@@ -41,6 +41,30 @@ pip install -r requirements.txt
 3. Configure your API key:
    - Create a `.env` file in the root directory
    - Add your Groq API key: `GROQ_API_KEY=your_api_key_here` (You can create a free API key by visiting: [Groq API Keys](https://console.groq.com/keys))
+
+4. Set up PATH and alias (Optional):
+
+### Windows (CMD)
+```cmd
+# Add to your autorun batch file
+doskey chat=python C:\path\to\chatbot-cli\main.py $*
+```
+
+### Windows (PowerShell)
+```powershell
+# Add to your PowerShell profile
+function chat { 
+  python C:\path\to\chatbot-cli\main.py $args 
+  }
+```
+
+### Linux/Mac (Bash)
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+chat() { 
+  python /path/to/chatbot-cli/main.py "$@"; 
+}
+```
 
 ## Usage
 
