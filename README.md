@@ -49,6 +49,7 @@ pip install -r requirements.txt
 # Add to your autorun batch file
 doskey chat=python C:\path\to\chatbot-cli\main.py $*
 ```
+Then use the ```chat``` command to run the application.
 
 ### Windows (PowerShell)
 ```powershell
@@ -57,6 +58,7 @@ function chat {
   python C:\path\to\chatbot-cli\main.py $args 
   }
 ```
+Then use the ```chat``` command to run the application.
 
 ### Linux/Mac (Bash)
 ```bash
@@ -65,6 +67,7 @@ chat() {
   python /path/to/chatbot-cli/main.py "$@"; 
 }
 ```
+Then use the ```chat``` command to run the application.
 
 ## Usage
 
