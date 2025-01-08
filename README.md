@@ -42,45 +42,6 @@ pip install -r requirements.txt
    - Create a `.env` file in the root directory
    - Add your Groq API key: `GROQ_API_KEY=your_api_key_here` (You can create a free API key by visiting: [Groq API Keys](https://console.groq.com/keys))
 
-4. Set up PATH and alias (Optional):
-
-### Windows (CMD)
-```batch
-# Add to PATH (run as Administrator)
-setx PATH "%PATH%;C:\path\to\chatbot-cli" /M
-
-# Create alias in cmd (add to your autorun batch file)
-doskey chat=python C:\path\to\chatbot-cli\main.py $*
-```
-
-### Windows (PowerShell)
-```powershell
-# Add to PATH (run as Administrator)
-$env:Path += ";C:\path\to\chatbot-cli"
-[Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
-
-# Create alias (add to your PowerShell profile)
-Set-Alias -Name chat -Value "python C:\path\to\chatbot-cli\main.py"
-```
-
-### Linux/Mac (Bash)
-```bash
-# Add to PATH (add to ~/.bashrc)
-export PATH="$PATH:/path/to/chatbot-cli"
-
-# Create alias (add to ~/.bashrc)
-alias chat='python /path/to/chatbot-cli/main.py'
-```
-
-### Linux/Mac (Zsh)
-```bash
-# Add to PATH (add to ~/.zshrc)
-export PATH="$PATH:/path/to/chatbot-cli"
-
-# Create alias (add to ~/.zshrc)
-alias chat='python /path/to/chatbot-cli/main.py'
-```
-
 ## Usage
 
 ### Interactive Mode
