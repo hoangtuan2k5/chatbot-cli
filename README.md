@@ -9,12 +9,12 @@ Hoàng Chiều Nguyễn Tuấn
 
 - 🤖 Multiple AI personas to choose from:
   - Programming Expert
-  - Writing Assistant
+  - Academic assistant and Learning assistant
   - General Assistant
+  - Special assistant
 - 💬 Multiple chat modes:
   - Interactive chat with multiline support
   - Quick inline chat for single queries
-  - File-based code/text analysis
 - 📋 Advanced copy functionalities:
   - Copy full responses with `cp`
   - Copy specific code blocks with `c-1`, `c-2`
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 3. Configure your API key:
    - Create a `.env` file in the root directory
-   - Add your Groq API key: `GROQ_API_KEY=your_api_key_here`
+   - Add your Groq API key: `GROQ_API_KEY=your_api_key_here` (You can create a free API key by visiting: [Groq API Keys](https://console.groq.com/keys))
 
 4. Set up PATH and alias (Optional):
 
