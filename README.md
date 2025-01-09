@@ -54,9 +54,13 @@ Then use the ```chat``` command to run the application.
 ### Windows (PowerShell)
 ```powershell
 # Add to your PowerShell profile
-function chat { 
-  python C:\path\to\chatbot-cli\main.py $args 
+Function chat {
+  if ($args) {
+    & python C:/Users/hoang/OneDrive/chatbot_cli/main.py --content $args
+  } else {
+    & python C:/Users/hoang/OneDrive/chatbot_cli/main.py --content ""
   }
+}
 ```
 Then use the ```chat``` command to run the application.
 
