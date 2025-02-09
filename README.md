@@ -163,12 +163,23 @@ Two ways to execute commands:
 
 1. Direct Execution (prefix with !):
    - Commands are executed immediately without confirmation
+   - Directory navigation updates prompt immediately
    - Examples:
      ```bash
+     # File and System commands
      !dir                 # List files (Windows)
      !ls                  # List files (Unix)
      !python --version    # Show Python version
      !help               # Show all available commands
+
+     # Directory Navigation
+     !cd /path/to/dir     # Change to specific directory
+     !cd                  # Go to home directory
+     !cd ..              # Go up one directory
+     
+     # The prompt updates with each cd command:
+     /current/path> !cd /new/path
+     /new/path> _
      ```
 
 2. Natural Language:

@@ -98,18 +98,23 @@ def get_help_text(os_type: str) -> str:
 
     return f"""Available Commands (current OS: {os_type}):
 
-1. File Operations:
-   - {commands['file_list']}                 - List files in directory
-   - {commands['file_content']} file.txt      - Show file contents
+1. Directory Navigation:
+   - cd <path>            - Change to specific directory
+   - cd                   - Go to home directory
+   - cd ..               - Go up one directory
    - {commands['pwd']}                 - Show current directory
 
-2. System Information:
+2. File Management:
+   - {commands['file_list']}                 - List files in directory
+   - {commands['file_content']} file.txt      - Show file contents
+
+3. System Information:
    - {commands['sysinfo']}          - Show system information
    - python --version   - Show Python version
    - {commands['memory']}           - Show memory information
    - {commands['disk']}             - Show disk space
 
-3. Screen Control:
+4. Screen Control:
    - {commands['clear']}                 - Clear screen
 
 You can request these commands in any language, examples:
@@ -118,7 +123,11 @@ You can request these commands in any language, examples:
 - "thông tin hệ thống"
 - "kiểm tra bộ nhớ"
 
-Note: All commands require confirmation (Y/N) and have a 30-second timeout."""
+Notes:
+- Commands starting with '!' execute immediately
+- Natural language commands require confirmation (Y/N)
+- Directory changes with 'cd' update the prompt
+- All commands have a 30-second timeout"""
 
 def execute_command(command: str) -> tuple[str, bool]:
     """
@@ -145,23 +154,43 @@ def execute_command(command: str) -> tuple[str, bool]:
             # Use sh for Unix-like systems
             shell_cmd = shlex.split(command)
 
-        # Execute command with timeout
+        # Handle cd command specially
+        if command.strip().lower().startswith('cd'):
+            try:
+                # Get the target directory
+                target_dir = command.strip()[2:].strip()
+                if not target_dir:  # 'cd' without args
+                    if os_type == 'windows':
+                        target_dir = os.environ.get('USERPROFILE', 'C:/')
+                    else:
+                        target_dir = os.environ.get('HOME', '/')
+                
+                # Change to the target directory
+                os.chdir(target_dir)
+                current_dir = os.getcwd()
+                return (f"✓ Changed directory to: {current_dir}", True)
+            except Exception as e:
+                return (f"❌ Failed to change directory: {str(e)}", False)
+
+        # Execute other commands with timeout
         result = subprocess.run(
             shell_cmd,
             capture_output=True,
             text=True,
             timeout=30,  # 30 second timeout
-            shell=False  # More secure
+            shell=False,  # More secure
+            cwd=os.getcwd()  # Use current directory
         )
 
         # Handle command output
         if result.returncode == 0:
             output = result.stdout.strip()
+            current_dir = os.getcwd()
             if output:
-                return (f"✓ Command executed successfully ({os_type}):\n{output}", True)
-            return (f"✓ Command executed successfully ({os_type})", True)
+                return (f"✓ Command executed successfully ({os_type}) in {current_dir}:\n{output}", True)
+            return (f"✓ Command executed successfully ({os_type}) in {current_dir}", True)
         else:
-            return (f"❌ Command failed:\n{result.stderr.strip()}", False)
+            return (f"❌ Command failed in {os.getcwd()}:\n{result.stderr.strip()}", False)
 
     except subprocess.TimeoutExpired:
         return ("❌ Command timed out after 30 seconds", False)
