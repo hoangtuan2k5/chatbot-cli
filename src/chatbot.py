@@ -18,7 +18,7 @@ class Chatbot:
             "model": config.MODEL,
             "temperature": config.TEMPERATURE,
             "max_tokens": config.MAX_TOKENS,
-            "stream": True,
+            "stream": False,  # Streaming disabled by default
             "messages": self.messages,
         }
 
@@ -27,25 +27,58 @@ class Chatbot:
             return content
 
         try:
+            # Read file in chunks to handle large files safely
             with open(file_path, "r", encoding="utf-8") as f:
-                file_content = f.read()
-                file_ext = file_path.split(".")[-1]
-                return f"{content}\n```{file_ext}\n{file_content}\n```"
+                chunks = []
+                while chunk := f.read(8192):  # 8KB chunks
+                    chunks.append(chunk)
+                    if len("".join(chunks)) > 1_000_000:  # 1MB limit
+                        raise ValueError("File too large (max 1MB)")
+                file_content = "".join(chunks)
+                
+            file_ext = file_path.split(".")[-1].lower()
+            return f"{content}\n```{file_ext}\n{file_content}\n```"
+            
+        except UnicodeDecodeError:
+            return f"{content}\n(Error: File appears to be binary)"
+        except FileNotFoundError:
+            return f"{content}\n(Error: File not found: {file_path})"
+        except PermissionError:
+            return f"{content}\n(Error: Permission denied accessing {file_path})"
+        except ValueError as e:
+            return f"{content}\n(Error: {str(e)})"
         except Exception as e:
             return f"{content}\n(Error reading file: {str(e)})"
 
     def get_response(self, content: str) -> str:
-        payload = self._prepare_payload(content)
-        payload["stream"] = False  # Disable Streaming
-
         try:
-            response = requests.post(config.API_URL, headers=self.headers, json=payload)
+            payload = self._prepare_payload(content)
+            
+            # Make request with timeout
+            response = requests.post(
+                config.API_URL,
+                headers=self.headers,
+                json=payload,
+                timeout=30  # 30 second timeout
+            )
             response.raise_for_status()
 
             response_content = response.json()["choices"][0]["message"]["content"]
             self.messages.append({"role": "assistant", "content": response_content})
             return response_content
 
+        except requests.Timeout:
+            error_msg = "\nError: Request timed out. Please try again."
+        except requests.ConnectionError:
+            error_msg = "\nError: Connection failed. Please check your internet connection."
+        except requests.HTTPError as e:
+            if e.response.status_code == 401:
+                error_msg = "\nError: Invalid API key"
+            elif e.response.status_code == 429:
+                error_msg = "\nError: Rate limit exceeded. Please try again later."
+            else:
+                error_msg = f"\nError: HTTP {e.response.status_code} - {e.response.text}"
         except Exception as e:
             error_msg = f"\nError: {str(e)}"
-            return error_msg
+        
+        return error_msg

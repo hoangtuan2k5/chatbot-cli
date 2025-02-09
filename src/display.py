@@ -39,12 +39,34 @@ def select_role_inline(roles: dict) -> str:
 def show_instructions():
     instructions = """
     Instructions:
+    Basic Commands:
     - Type 'exit' to quit the application
     - Press Enter to send message
-    - Press Ctrl + L for new line
-    - Type 'cp' to copy full response
-    - Type 'c-1', 'c-2',... to copy specific code blocks
-    - Combine multiple copy commands: 'cp c-1 c-2'
+    - Press Ctrl+J to insert a new line in message
+
+    Copy Commands:
+    - 'cp' - Copy the entire response
+    - 'c-1', 'c-2', etc. - Copy specific code blocks
+    - Combine commands: 'cp c-1 c-2'
+
+    System Commands:
+    1. Direct commands (start with '!'):
+       - !help - Show command examples
+       - !dir (Windows) or !ls (Unix) - List files
+       - !python --version - Show Python version
+
+    2. Natural language commands (New!):
+       Ask in any language, for example:
+       - "show me all files"
+       - "hiển thị các file"
+       - "xóa màn hình"
+       - "thông tin hệ thống"
+       - "limpia la pantalla"
+    
+    Note:
+    - All commands require confirmation (Y/N)
+    - 30-second timeout for safety
+    - OS-specific command handling
     """
     rprint(Panel(instructions, title="How to use", border_style="blue"))
 
