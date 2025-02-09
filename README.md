@@ -65,38 +65,104 @@ doskey chat=python C:\path\to\chatbot-cli\main.py $*
 
 ### Windows (PowerShell)
 ```powershell
-# Add to your PowerShell profile
+# Add to your PowerShell profile ($PROFILE)
 Function chat {
-  if ($args) {
-    & python C:\path\to\chatbot-cli\main.py --content $args
-  } else {
-    & python C:\path\to\chatbot-cli\main.py
-  }
+    param(
+        [string]$message,
+        [string]$file
+    )
+
+    # Parse arguments
+    if ($args.Count -gt 0) {
+        # Check if first arg is -f/--file
+        if ($args[0] -eq "-f" -or $args[0] -eq "--file") {
+            if ($args.Count -gt 2) {
+                # File with message: chat -f file.py "message"
+                $file = $args[1]
+                $message = $args[2]
+            } elseif ($args.Count -gt 1) {
+                # File only: chat -f file.py
+                $file = $args[1]
+            }
+        } else {
+            # Message only: chat "message"
+            $message = $args[0]
+        }
+    }
+
+    # Build command
+    if ($file -and $message) {
+        & python C:\path\to\chatbot-cli\main.py --file $file $message
+    } elseif ($file) {
+        & python C:\path\to\chatbot-cli\main.py --file $file
+    } elseif ($message) {
+        & python C:\path\to\chatbot-cli\main.py $message
+    } else {
+        & python C:\path\to\chatbot-cli\main.py
+    }
 }
 ```
 
 ### Linux/Mac (Bash/Zsh)
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
-chat() { 
-  python /path/to/chatbot-cli/main.py "$@"
+chat() {
+    local file=""
+    local message=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -f|--file)
+                if [[ -n "$2" ]]; then
+                    file="$2"
+                    shift 2
+                else
+                    echo "Error: File path required"
+                    return 1
+                fi
+                ;;
+            *)
+                message="$1"
+                shift
+                ;;
+        esac
+    done
+
+    # Build command
+    if [[ -n "$file" && -n "$message" ]]; then
+        python /path/to/chatbot-cli/main.py --file "$file" "$message"
+    elif [[ -n "$file" ]]; then
+        python /path/to/chatbot-cli/main.py --file "$file"
+    elif [[ -n "$message" ]]; then
+        python /path/to/chatbot-cli/main.py "$message"
+    else
+        python /path/to/chatbot-cli/main.py
+    fi
 }
 ```
 
 ## Usage
-
 ### Interactive Mode
 ```bash
+# Using chat alias (recommended):
+chat
+
+# Using python directly:
 python main.py
 ```
 
 ### Single Query Mode
 You can use different roles by adding the role number prefix:
 ```bash
-# Default role (5: CLI Assistant)
-python main.py "hiển thị danh sách file"
+# Using chat alias (recommended):
+chat "hiển thị danh sách file"              # Default role (5: CLI Assistant)
+chat "1#explain this code"                  # Role 1: Programming Expert
+chat "2#explain this concept"               # Role 2: Academic Expert
+chat "5#show system info"                   # Role 5: CLI Assistant
 
-# Choose specific role with role# prefix
+# Using python directly:
+python main.py "hiển thị danh sách file"    # Default role
 python main.py "1#explain this code"        # Role 1: Programming Expert
 python main.py "2#explain this concept"     # Role 2: Academic Expert
 python main.py "5#show system info"         # Role 5: CLI Assistant
@@ -104,11 +170,16 @@ python main.py "5#show system info"         # Role 5: CLI Assistant
 
 ### File Input Mode
 ```bash
-# Default role
-python main.py --file path/to/file.py "explain this code"
+# Using chat alias (recommended):
+chat -f path/to/file.py                     # Interactive mode with file
+chat -f path/to/file.py "explain this"      # Default role with file
+chat -f path/to/file.py "1#explain this"    # Role 1 with file
 
-# Specific role
-python main.py --file path/to/file.py "1#explain this code"
+# Using python directly:
+python main.py --file path/to/file.py                    # Interactive mode
+python main.py --file path/to/file.py "explain this"     # Default role
+python main.py --file path/to/file.py "1#explain this"   # Role 1
+```
 ```
 > Note: Files are limited to 1MB and must be text-based. Binary files will be rejected.
 
@@ -125,24 +196,39 @@ python main.py "1#your question here | cp c-1 c-2"
 
 1. Direct Command Mode (executed immediately):
 ```bash
-# Interactive mode
-You: !dir         # Windows: executes immediately
-You: !ls          # Unix: executes immediately
-You: !python --version
+# Using chat alias (recommended):
+chat "!dir"                # Windows: executes immediately
+chat "!ls"                 # Unix: executes immediately
+chat "!python --version"   # Any system command
 
-# Inline mode
-python main.py "!echo Hello World"
+# Using python directly:
+python main.py "!dir"
+python main.py "!ls"
+python main.py "!python --version"
+
+# Interactive mode (both methods):
+You: !dir                  # Windows: executes immediately
+You: !ls                   # Unix: executes immediately
+You: !python --version
 ```
 
 2. Natural Language Mode (requires confirmation):
 ```bash
-# Interactive mode
+# Using chat alias (recommended):
+chat "show me the files here"               # Suggests 'dir' or 'ls'
+chat "what's my current directory"          # Suggests 'pwd' or 'cd'
+chat "hiển thị danh sách file"             # Multi-language support
+
+# Using python directly:
+python main.py "show me the files here"
+python main.py "what's my current directory"
+python main.py "hiển thị danh sách file"
+
+# Interactive mode (both methods):
 You: show me the files in this directory
 Bot: Do you want to execute 'dir'? (Y/N):
-
-# Inline mode
-python main.py "show me the current directory"
-Bot: Do you want to execute 'pwd'? (Y/N):
+You: hiển thị danh sách file
+Bot: Do you want to execute 'dir'? (Y/N):
 ```
 
 Command Behavior:

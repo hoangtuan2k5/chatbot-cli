@@ -17,7 +17,7 @@ from src.display import (
 from src.utils import copy_content, execute_command, confirm_execution
 
 def process_message(message: str, current_role: str = DEFAULT_INLINE_ROLE) -> tuple[str, str]:
-    """Process message to extract role and clean message. Returns (clean_message, system_role)"""
+    """Process message to extract role and clean message. Returns (clean_message, role_description)"""
     message = message.strip()
     if "#" in message:
         parts = message.split("#", 1)
@@ -52,28 +52,54 @@ def main():
         copy_command = parts[1] if len(parts) > 1 else None
 
         # Process message to get role and clean message first
-        message, system_role = process_message(message)
-        chatbot = Chatbot(system_role)
+        message, role_desc = process_message(message)
+        role_number = next(key for key, desc in ROLES.items() if desc == role_desc)
+        chatbot = Chatbot(role_desc)
 
         # Handle file mode
         if args.file:
             file_content = chatbot.process_file_input("", args.file)
             message = f"{message}\n\n{file_content}" if message else file_content
 
-        if not args.file and message.startswith("!"):
-            # Handle direct command execution
-            cmd = message[1:].strip()
-            if cmd.lower() == "help":
-                result, _ = execute_command("help")
-            else:
-                result, success = execute_command(cmd)
-                if not success:
-                    print("\nTry '!help' for command examples")
-            print(result)
-            return
+        if message:
+            # Only allow command execution in CLI Assistant role
+            if role_number == "5":
+                # Handle direct command execution with ! prefix
+                if not args.file and message.startswith("!"):
+                    cmd = message[1:].strip()
+                    if cmd.lower() == "help":
+                        result, _ = execute_command("help")
+                    else:
+                        result, success = execute_command(cmd)
+                        if not success:
+                            print("\nTry '!help' for command examples")
+                    print(result)
+                    return
 
-        # Normal message handling
-        response_text = chatbot.get_response(message)
+                # Use specialized CLI response method
+                response_text = chatbot.get_cli_response(message, platform.system().lower())
+                
+                if "COMMAND:" in response_text:
+                    parts = response_text.split("COMMAND:")
+                    if len(parts) > 1 and parts[1].strip():
+                        cmd = parts[1].split("\n")[0].strip()
+                        # Remove any OS-specific comments in parentheses
+                        cmd = cmd.split("(")[0].strip()
+                        if confirm_execution(cmd):
+                            result, success = execute_command(cmd)
+                            print(result)
+                            if not success:
+                                print("\nTry '!help' for command examples")
+                            return
+            else:
+                # Ignore command-like inputs for non-CLI roles
+                if message.startswith("!"):
+                    print("❌ Command execution is only available in CLI Assistant role (5)")
+                    return
+                
+                # For all other roles, get normal response
+                response_text = chatbot.get_response(message)
+
         display_markdown(response_text)
 
         # Process copy command if present
@@ -83,7 +109,8 @@ def main():
         return
 
     # Interactive chat mode
-    system_role = select_role(ROLES)  # This one clears screen
+    role_number = select_role(ROLES)  # This one clears screen and returns role number
+    system_role = ROLES[role_number]  # Get the role description
     chatbot = Chatbot(system_role)
     show_instructions()
 
@@ -107,7 +134,7 @@ def main():
     while True:
         try:
             # Use current directory as prompt for CLI Assistant role
-            prompt_text = f"{os.getcwd()}> " if system_role == ROLES[DEFAULT_INLINE_ROLE] else "You: "
+            prompt_text = f"{os.getcwd()}> " if role_number == "5" else "You: "
             user_input = session.prompt(
                 prompt_text,
                 multiline=True,
@@ -135,28 +162,54 @@ def main():
                     continue
 
             # Process message to get role and clean message
-            clean_message, new_role = process_message(user_input)
-            if new_role != system_role:
-                system_role = new_role
+            clean_message, role_desc = process_message(user_input, role_number)
+            if role_desc != system_role:
+                system_role = role_desc
+                role_number = next(key for key, desc in ROLES.items() if desc == role_desc)
                 chatbot = Chatbot(system_role)
-                user_input = clean_message
+            
+            # Use clean_message for all further processing
+            if clean_message:
+                # Only allow command execution in CLI Assistant role
+                if role_number == "5":
+                    # Handle direct command execution with ! prefix
+                    if clean_message.startswith("!"):
+                        cmd = clean_message[1:].strip()
+                        if cmd.lower() == "help":
+                            result, _ = execute_command("help")
+                        else:
+                            result, success = execute_command(cmd)
+                            if not success:
+                                print("\nTry '!help' for command examples")
+                        print(result)
+                        continue
 
-            # Handle direct commands
-            if user_input.startswith("!"):
-                cmd = user_input[1:].strip()
-                if cmd.lower() == "help":
-                    result, _ = execute_command("help")
+                    # Use specialized CLI response method
+                    response_text = chatbot.get_cli_response(clean_message, platform.system().lower())
+                    
+                    if "COMMAND:" in response_text:
+                        parts = response_text.split("COMMAND:")
+                        if len(parts) > 1 and parts[1].strip():
+                            cmd = parts[1].split("\n")[0].strip()
+                            # Remove any OS-specific comments in parentheses
+                            cmd = cmd.split("(")[0].strip()
+                            if confirm_execution(cmd):
+                                result, success = execute_command(cmd)
+                                print(result)
+                                if not success:
+                                    print("\nTry '!help' for command examples")
+                                continue
                 else:
-                    result, success = execute_command(cmd)
-                    if not success:
-                        print("\nTry '!help' for command examples")
-                print(result)
-                continue
-
-            # Normal message handling
-            if user_input:
+                    # Ignore command-like inputs for non-CLI roles
+                    if clean_message.startswith("!"):
+                        print("❌ Command execution is only available in CLI Assistant role (5)")
+                        continue
+                    
+                    # For all other roles, get normal response
+                    response_text = chatbot.get_response(clean_message)
+    
+                # Display response
                 print("\nAssistant:", flush=True)
-                response_text = chatbot.get_response(user_input)
                 last_response = response_text
                 display_markdown(response_text)
                 print()

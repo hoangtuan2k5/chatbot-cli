@@ -50,7 +50,43 @@ class Chatbot:
         except Exception as e:
             return f"{content}\n(Error reading file: {str(e)})"
 
+    def get_cli_response(self, content: str, os_type: str) -> str:
+        """Special method for CLI Assistant role that checks for commands"""
+        # Check if the content appears to be asking for a command
+        command_indicators = [
+            "how to", "làm sao", "làm thế nào",  # How to indicators
+            "show", "hiển thị", "xem",  # Show/display indicators
+            "list", "liệt kê",  # List indicators
+            "delete", "xóa",  # Delete indicators
+            "create", "tạo",  # Create indicators
+            "move", "di chuyển",  # Move indicators
+            "copy", "sao chép",  # Copy indicators
+            "run", "chạy",  # Run indicators
+            "start", "bắt đầu",  # Start indicators
+            "stop", "dừng",  # Stop indicators
+            "restart", "khởi động lại",  # Restart indicators
+            "find", "tìm",  # Find indicators
+            "change", "thay đổi",  # Change indicators
+            "update", "cập nhật",  # Update indicators
+            "install", "cài đặt",  # Install indicators
+            "remove", "gỡ bỏ",  # Remove indicators
+            "clear", "xóa",  # Clear indicators
+            "check", "kiểm tra",  # Check indicators
+            "open", "mở"  # Open indicators
+        ]
+        
+        is_command_like = any(indicator.lower() in content.lower() for indicator in command_indicators)
+        
+        if is_command_like:
+            modified_content = f"If this text describes a command to execute, suggest the appropriate command for {os_type} OS. If not, respond normally: {content}"
+        else:
+            # If it doesn't look like a command request, just use the content as is
+            modified_content = content
+            
+        return self.get_response(modified_content)
+
     def get_response(self, content: str) -> str:
+        """Get a normal response without command checking"""
         try:
             payload = self._prepare_payload(content)
             

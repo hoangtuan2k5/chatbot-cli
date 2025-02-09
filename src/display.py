@@ -21,7 +21,7 @@ def select_role(roles: dict) -> str:
     while True:
         choice = Prompt.ask("Enter role number", choices=list(roles.keys()))
         if choice in roles:
-            return roles[choice]
+            return choice  # Return the role number instead of the role description
 
 
 def select_role_inline(roles: dict) -> str:
@@ -33,7 +33,7 @@ def select_role_inline(roles: dict) -> str:
     while True:
         choice = Prompt.ask("Enter role number", choices=list(roles.keys()))
         if choice in roles:
-            return roles[choice]
+            return choice  # Return the role number instead of the role description
 
 
 def show_instructions():
